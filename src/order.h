@@ -13,6 +13,7 @@ struct Order
 
 #define MAX_ORDERS 100
 #define ORDER_FILENAME "uzsakymas.txt"
+#define ORDER_SAVEFILENAME "ataskaita.txt"
 
 #define ORDER_CATEGORY_1 "Dviraciai"
 #define ORDER_CATEGORY_2 "Dalys"
@@ -25,6 +26,7 @@ extern Order g_orders[MAX_ORDERS];
 extern int g_orderCount;
 
 bool order_read_file();
+bool order_write_file(string &str);
 
 void order_stringify_order_data(string &str, Order &ord, bool singleCategory = false);
 void order_stringify_full_sum(string &str, string category = "");

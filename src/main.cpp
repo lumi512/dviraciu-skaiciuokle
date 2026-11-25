@@ -24,7 +24,7 @@ int main()
 	while (!g_quit)
 	{
 		string category;
-		if (g_currentAction == MENU_VIEWCATEGORY || g_currentAction == MENU_VIEWCATEGORYSUM)
+		if (g_currentAction == MENU_VIEWCATEGORY)
 		{
 			int result = menu_list("Iveskite kategorija pavadinima", {
 				ORDER_CATEGORY_1,

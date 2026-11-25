@@ -17,14 +17,13 @@ void menu_set_action(MenuAction act)
 bool menu_perform_action(string category)
 {
 	int result;
+	string order;
 	switch (g_currentAction)
 	{
 		case MENU_MAIN:
 			result = menu_list("Meniu", {
 				"Perziureti visas uzsakymo prekes",
 				"Perziureti pasirinktos kategorijos prekes",
-				"Perziureti viso uzsakymo sumas",
-				"Perziureti uzsakymo sumas pagal kategorijas",
 				"Parodyti visa ataskaita",
 				"Iseiti"
 			});
@@ -33,10 +32,8 @@ bool menu_perform_action(string category)
 			{
 				case 1: menu_set_action(MENU_VIEWALL); break;
 				case 2: menu_set_action(MENU_VIEWCATEGORY); break;
-				case 3: menu_set_action(MENU_VIEWSUM); break;
-				case 4: menu_set_action(MENU_VIEWCATEGORYSUM); break;
-				case 5: menu_set_action(MENU_SAVE); break;
-				case 6: menu_set_action(MENU_QUIT); break;
+				case 3: menu_set_action(MENU_SAVE); break;
+				case 4: menu_set_action(MENU_QUIT); break;
 			}
 			break;
 
@@ -52,6 +49,24 @@ bool menu_perform_action(string category)
 				print_line(order_get_category(category));
 			}
 			menu_set_action(MENU_ACTIONEND);
+			break;
+
+		case MENU_SAVE:
+			order = order_get_all();
+			print_line(order);
+
+			result = menu_list("Issaugoti ataskaita i faila?", {
+				"Taip",
+				"Ne"
+			});
+
+			if (result == 1)
+			{
+				if (order_write_file(order))
+					print_line("Ataskaita issaugota.");
+			}
+
+			menu_set_action(MENU_MAIN);
 			break;
 
 		case MENU_QUIT:

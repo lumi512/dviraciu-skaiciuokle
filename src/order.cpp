@@ -126,6 +126,21 @@ bool order_read_file()
 	return true;
 }
 
+bool order_write_file(string &str)
+{
+	ofstream file(ORDER_SAVEFILENAME);
+	if (!file.is_open())
+	{
+		fatal_error("Nepavyko sukurti faila.");
+		return false;
+	}
+
+	file << str;
+
+	file.close();
+	return true;
+}
+
 void order_stringify_order_data(string &str, Order &ord, bool singleCategory)
 {
 	string currencyStr = " " + string(ORDER_CURRENCY);
@@ -191,6 +206,7 @@ string order_get_category(string category)
 {
 	string str = "";
 
+	bool containsOrders = false;
 	for (Order ord : g_orders)
 	{
 		if (ord.category == category)
@@ -198,11 +214,18 @@ string order_get_category(string category)
 			str += ORDER_DIVIDER + string("\n");
 			order_stringify_order_data(str, ord, true);
 			str += string("\n") + ORDER_DIVIDER + string("\n");
+
+			containsOrders = true;
 		}
 	}
 
-	str += string("\n") + ORDER_TITLE_DIVIDER + string("\n");
-	order_stringify_full_sum(str, category);
+	if (containsOrders)
+	{
+		str += string("\n") + ORDER_TITLE_DIVIDER + string("\n");
+		order_stringify_full_sum(str, category);
+	}
+	else
+		str = "Kategorijoje nera prekiu.";
 
 	return str;
 }
