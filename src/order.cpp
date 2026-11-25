@@ -126,40 +126,63 @@ bool order_read_file()
 	return true;
 }
 
-void order_stringify_order_data(string &str, Order &ord)
+void order_stringify_order_data(string &str, Order &ord, bool singleCategory)
 {
+	string currencyStr = " " + string(ORDER_CURRENCY);
+
 	str += "Preke: " + ord.product + "\n";
-	str += "Vieneto kaina: " + get_precise(ord.basePrice) + " " + ORDER_CURRENCY + "\n";
-	str += "Uzsakytas kiekis: " + to_string(ord.orderedAmount);
+	if (!singleCategory)
+		str += "Kategorija: " + ord.category + "\n";
+
+	str += "Vieneto kaina: " + get_precise(ord.basePrice) + currencyStr + "\n";
+	str += "Uzsakytas kiekis: " + to_string(ord.orderedAmount) + "\n";
+
+	string baseSum = get_precise(order_get_sum_price(ord)) + currencyStr;
+	if (ord.orderedAmount >= 10)
+	{
+		str += "Suma (be nuolaidos): " + baseSum + "\n";
+		
+		string discountedPrice = get_precise(order_get_discounted_price(ord)) + currencyStr;
+		str += "Vieneto kaina (su nuolaida): " + discountedPrice + "\n";
+
+		string discountedSum = get_precise(order_get_discounted_sum_price(ord)) + currencyStr;
+		str += "Suma (su nuolaida): " + discountedSum;
+	}
+	else
+		str += "Suma: " + baseSum;
 }
 
-#define ORDER_DIVIDER		"\n------------------------------------------\n"
-#define ORDER_TITLE_DIVIDER "\n==========================================\n"
+void order_stringify_full_sum(string &str, string category)
+{
+	string currencyStr = " " + string(ORDER_CURRENCY);
+
+	str += "Uzsakymo suma (be nuolaidu): " + get_precise(order_get_full_price(category)) + currencyStr + "\n";
+	str += "Nuolaidu suma: " + get_precise(order_get_discount_full_price(category)) + currencyStr + "\n";
+	if (order_get_discount_full_price(category) > 0.0f)
+		str += "Moketina suma (po nuolaidu): " + get_precise(order_get_discounted_full_price(category)) + currencyStr + "\n";
+}
+
+#define ORDER_DIVIDER		"------------------------------------------"
+#define ORDER_TITLE_DIVIDER "=========================================="
 
 string order_get_all()
 {
 	string str = "";
 
 	string prevCategory = "";
-	for (int i = 0; i < MAX_ORDERS; i++)
+	for (int i = 0; i < g_orderCount; i++)
 	{
 		Order ord = g_orders[i];
 		if (ord.product == "")
 			continue;
 
-		if (ord.category != prevCategory)
-		{
-			str += ORDER_TITLE_DIVIDER;
-			str += ord.category;
-			str += ORDER_TITLE_DIVIDER;
-
-			prevCategory = ord.category;
-		}
-
-		str += ORDER_DIVIDER;
+		str += ORDER_DIVIDER + string("\n");
 		order_stringify_order_data(str, ord);
-		str += ORDER_DIVIDER;
+		str += string("\n") + ORDER_DIVIDER + string("\n");
 	}
+
+	str += string("\n") + ORDER_TITLE_DIVIDER + string("\n");
+	order_stringify_full_sum(str);
 
 	return str;
 }
@@ -172,26 +195,72 @@ string order_get_category(string category)
 	{
 		if (ord.category == category)
 		{
-			str += ORDER_DIVIDER;
-			order_stringify_order_data(str, ord);
-			str += ORDER_DIVIDER;
+			str += ORDER_DIVIDER + string("\n");
+			order_stringify_order_data(str, ord, true);
+			str += string("\n") + ORDER_DIVIDER + string("\n");
 		}
 	}
+
+	str += string("\n") + ORDER_TITLE_DIVIDER + string("\n");
+	order_stringify_full_sum(str, category);
 
 	return str;
 }
 
 double order_get_sum_price(Order &ord)
 {
-
+	return ord.basePrice * ord.orderedAmount;
 }
 
 double order_get_discounted_price(Order &ord)
 {
-
+	double perc = (100.0f - ORDER_DISCOUNT_PERCENT) / 100.0f;
+	if (ord.orderedAmount < 10)
+		perc = 1.0f;
+	return ord.basePrice * perc;
 }
 
 double order_get_discounted_sum_price(Order &ord)
 {
+	double price = order_get_discounted_price(ord);
+	return price * ord.orderedAmount;
+}
 
+double order_get_full_price(string category)
+{
+	double price = 0.0;
+	for (Order ord : g_orders)
+	{
+		if ((category != "" && ord.category == category) || category == "")
+			price += order_get_sum_price(ord);
+	}
+
+	return price;
+}
+
+double order_get_discount_full_price(string category)
+{
+	double price = 0.0;
+	for (Order ord : g_orders)
+	{
+		if (ord.orderedAmount < 10)
+			continue;
+
+		if ((category != "" && ord.category == category) || category == "")
+			price += order_get_discounted_price(ord);
+	}
+
+	return price;
+}
+
+double order_get_discounted_full_price(string category)
+{
+	double price = 0.0;
+	for (Order ord : g_orders)
+	{
+		if ((category != "" && ord.category == category) || category == "")
+			price += order_get_discounted_sum_price(ord);
+	}
+
+	return price;
 }
