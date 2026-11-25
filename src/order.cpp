@@ -1,4 +1,6 @@
 #include <fstream>
+#include <cstdio>
+#include "main.h"
 #include "printutils.h"
 #include "order.h"
 
@@ -26,25 +28,21 @@ bool order_set_index(Order &ord, int &ind, string &str)
 			break;
 
 		case 2:
-			float price = atof(str.c_str());
-			if (price < 0)
+			ord.basePrice = atof(str.c_str());
+			if (ord.basePrice < 0)
 			{
 				fatal_error("Netinkama uzsakymo kaina: " + str);
 				return false;
 			}
-				
-			ord.basePrice = atof(str.c_str());
 			break;
 
 		case 3:
-			int amount = atoi(str.c_str());
-			if (amount < 0)
+			ord.orderedAmount = atoi(str.c_str());
+			if (ord.orderedAmount < 0)
 			{
 				fatal_error("Netinkama uzsakymo kiekis: " + str);
 				return false;
 			}
-
-			ord.orderedAmount = atoi(str.c_str());
 			break;
 
 		default:
@@ -126,4 +124,74 @@ bool order_read_file()
 	
 	file.close();
 	return true;
+}
+
+void order_stringify_order_data(string &str, Order &ord)
+{
+	str += "Preke: " + ord.product + "\n";
+	str += "Vieneto kaina: " + get_precise(ord.basePrice) + " " + ORDER_CURRENCY + "\n";
+	str += "Uzsakytas kiekis: " + to_string(ord.orderedAmount);
+}
+
+#define ORDER_DIVIDER		"\n------------------------------------------\n"
+#define ORDER_TITLE_DIVIDER "\n==========================================\n"
+
+string order_get_all()
+{
+	string str = "";
+
+	string prevCategory = "";
+	for (int i = 0; i < MAX_ORDERS; i++)
+	{
+		Order ord = g_orders[i];
+		if (ord.product == "")
+			continue;
+
+		if (ord.category != prevCategory)
+		{
+			str += ORDER_TITLE_DIVIDER;
+			str += ord.category;
+			str += ORDER_TITLE_DIVIDER;
+
+			prevCategory = ord.category;
+		}
+
+		str += ORDER_DIVIDER;
+		order_stringify_order_data(str, ord);
+		str += ORDER_DIVIDER;
+	}
+
+	return str;
+}
+
+string order_get_category(string category)
+{
+	string str = "";
+
+	for (Order ord : g_orders)
+	{
+		if (ord.category == category)
+		{
+			str += ORDER_DIVIDER;
+			order_stringify_order_data(str, ord);
+			str += ORDER_DIVIDER;
+		}
+	}
+
+	return str;
+}
+
+double order_get_sum_price(Order &ord)
+{
+
+}
+
+double order_get_discounted_price(Order &ord)
+{
+
+}
+
+double order_get_discounted_sum_price(Order &ord)
+{
+
 }

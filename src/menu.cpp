@@ -3,7 +3,7 @@
 
 #include "menu.h"
 #include "printutils.h"
-#include "random.h"
+#include "order.h"
 
 MenuAction g_currentAction = MENU_MAIN;
 MenuAction g_lastAction = MENU_INVALID;
@@ -14,11 +14,46 @@ void menu_set_action(MenuAction act)
 	g_currentAction = act;
 }
 
-bool menu_perform_action()
+bool menu_perform_action(string category)
 {
 	int result;
 	switch (g_currentAction)
 	{
+		case MENU_MAIN:
+			result = menu_list("Meniu", {
+				"Perziureti visas uzsakymo prekes",
+				"Perziureti pasirinktos kategorijos prekes",
+				"Perziureti viso uzsakymo sumas",
+				"Perziureti uzsakymo sumas pagal kategorijas",
+				"Parodyti visa ataskaita",
+				"Iseiti"
+			});
+
+			switch (result)
+			{
+				case 1: menu_set_action(MENU_VIEWALL); break;
+				case 2: menu_set_action(MENU_VIEWCATEGORY); break;
+				case 3: menu_set_action(MENU_VIEWSUM); break;
+				case 4: menu_set_action(MENU_VIEWCATEGORYSUM); break;
+				case 5: menu_set_action(MENU_SAVE); break;
+				case 6: menu_set_action(MENU_QUIT); break;
+			}
+			break;
+
+		case MENU_VIEWALL:
+			print_line(order_get_all());
+			menu_set_action(MENU_ACTIONEND);
+			break;
+
+		case MENU_VIEWCATEGORY:
+			if (category != "")
+			{
+				print_title("Perziureti kategorija: " + category);
+				print_line(order_get_category(category));
+			}
+			menu_set_action(MENU_ACTIONEND);
+			break;
+
 		case MENU_QUIT:
 			g_quit = true;
 			break;

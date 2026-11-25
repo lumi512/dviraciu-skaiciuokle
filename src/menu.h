@@ -10,6 +10,12 @@ enum MenuAction
 
 	MENU_MAIN,
 
+	MENU_VIEWALL,
+	MENU_VIEWCATEGORY,
+	MENU_VIEWSUM,
+	MENU_VIEWCATEGORYSUM,
+	MENU_SAVE,
+
 	MENU_QUIT,
 
 	MENU_ACTIONEND,
@@ -21,7 +27,7 @@ extern MenuAction g_currentAction;
 extern MenuAction g_lastAction;
 
 void menu_set_action(MenuAction act);
-bool menu_perform_action();
+bool menu_perform_action(string category = "");
 
 void menu_print_list(vector<string> list);
 int menu_list(string title, vector<string> list);
