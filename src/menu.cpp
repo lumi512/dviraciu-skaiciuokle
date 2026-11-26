@@ -2,8 +2,10 @@
 #include <sstream>
 
 #include "menu.h"
+#include "menu_base.h"
 #include "printutils.h"
 #include "order.h"
+#include "order_stringify.h"
 
 MenuAction g_currentAction = MENU_MAIN;
 MenuAction g_lastAction = MENU_INVALID;
@@ -38,7 +40,7 @@ bool menu_perform_action(string category)
 			break;
 
 		case MENU_VIEWALL:
-			print_line(order_get_all());
+			print_line(order_to_string());
 			menu_set_action(MENU_ACTIONEND);
 			break;
 
@@ -46,13 +48,13 @@ bool menu_perform_action(string category)
 			if (category != "")
 			{
 				print_title("Perziureti kategorija: " + category);
-				print_line(order_get_category(category));
+				print_line(order_category_to_string(category));
 			}
 			menu_set_action(MENU_ACTIONEND);
 			break;
 
 		case MENU_SAVE:
-			order = order_get_all();
+			order = order_to_string();
 			print_line(order);
 
 			result = menu_list("Issaugoti ataskaita i faila?", {
@@ -60,11 +62,8 @@ bool menu_perform_action(string category)
 				"Ne"
 			});
 
-			if (result == 1)
-			{
-				if (order_write_file(order))
-					print_line("Ataskaita issaugota.");
-			}
+			if (result == 1 && order_write_file(order))
+				print_line("Ataskaita issaugota.");
 
 			menu_set_action(MENU_MAIN);
 			break;
@@ -99,75 +98,5 @@ bool menu_perform_action(string category)
 			return false;
 	}
 
-	return true;
-}
-
-void menu_print_list(vector<string> list)
-{
-	for (int i = 0; i < list.size(); i++)
-	{
-		string str = list[i];
-		print_line(to_string(i + 1) + ". " + str);
-	}
-}
-
-int menu_list(string title, vector<string> list)
-{
-	print_title(title);
-	menu_print_list(list);
-
-	do menu_get_input(1, list.size());
-	while (g_inputResult == -1);
-
-	return g_inputResult;
-}
-
-int g_inputResult = -1;
-string g_inputString = "";
-
-void menu_clear_input()
-{
-	cin.clear();
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
-
-bool menu_get_string()
-{
-	cout << "> ";
-
-	string str;
-	cin >> str;
-
-	if (cin.fail())
-	{
-		print_line("Neteisingas ivedimas.");
-		menu_clear_input();
-
-		g_inputString = "";
-		return false;
-	}
-
-	g_inputString = str;
-	return true;
-}
-
-bool menu_get_input(int minval, int maxval)
-{
-	cout << "> ";
-
-	string str;
-	cin >> str;
-
-	int val = atoi(str.c_str());
-	if (cin.fail() || (minval != -1 && val < minval) || (maxval != -1 && val > maxval))
-	{
-		print_line("Neteisingas pasirinkimas.");
-		menu_clear_input();
-
-		g_inputResult = -1;
-		return false;
-	}
-
-	g_inputResult = val;
 	return true;
 }

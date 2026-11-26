@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "menu.h"
-#include "printutils.h"
+#include "menu_base.h"
 #include "order.h"
 
 bool g_quit = false;

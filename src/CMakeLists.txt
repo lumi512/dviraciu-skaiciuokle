@@ -1,9 +1,11 @@
 add_executable(dvpusk
 	main.cpp
-	printutils.cpp
-	random.cpp
-	order.cpp
 	menu.cpp
+	menu_base.cpp
+	printutils.cpp
+	order.cpp
+	order_price.cpp
+	order_stringify.cpp
 )
 
 add_custom_target(copy_file ALL)
